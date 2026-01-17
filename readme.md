@@ -1723,11 +1723,6 @@ DATABASE_URL="mongodb+srv://username:password@cluster.mongodb.net/college-club"
 JWT_SECRET=your-super-secret-jwt-key-min-32-characters
 JWT_EXPIRES_IN=7d
 
-# File Upload (if using cloud storage)
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
-
 # CORS (if needed)
 FRONTEND_URL=http://localhost:3000
 ```
