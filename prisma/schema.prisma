@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  email       String   @unique
+  password    String
+  name        String
+  role        UserRole @default(LEADER)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  createdOpenings Opening[] @relation("CreatedBy")
+  createdForms    Form[]    @relation("FormCreatedBy")
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  LEADER
+}
+
+model Opening {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  title           String
+  domain          String
+  workType        WorkType
+  numberOfSlots   Int
+  preText         String       // Short description for card view
+  aboutRole       String       // Detailed description
+  skillsRequired  String       // Can store as JSON string or comma-separated
+  extraInfo       String?
+  isActive        Boolean      @default(true)
+  views           Int          @default(0)
+  createdById     String       @db.ObjectId
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  createdBy     User          @relation("CreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  form          Form?
+  applications  Application[]
+
+  @@map("openings")
+}
+
+enum WorkType {
+  HYBRID
+  REMOTE
+  ONSITE
+}
+
+model Form {
+  id                String      @id @default(auto()) @map("_id") @db.ObjectId
+  openingId         String      @unique @db.ObjectId
+  hasPriorExp       Boolean     @default(true) // Whether to include prior experience field
+  createdById       String      @db.ObjectId
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  // Relations
+  opening           Opening     @relation(fields: [openingId], references: [id], onDelete: Cascade)
+  createdBy         User        @relation("FormCreatedBy", fields: [createdById], references: [id])
+  customFields      FormField[]
+  applications      Application[]
+
+  @@map("forms")
+}
+
+model FormField {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  formId       String        @db.ObjectId
+  fieldTitle   String
+  inputType    InputType
+  isRequired   Boolean       @default(false)
+  options      String?       // JSON string for multiple choice options
+  order        Int           // To maintain field order
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relations
+  form         Form          @relation(fields: [formId], references: [id], onDelete: Cascade)
+  responses    FieldResponse[]
+
+  @@map("form_fields")
+}
+
+enum InputType {
+  SHORT_ANSWER
+  LONG_ANSWER
+  MULTIPLE_CHOICE
+  MULTIPLE_CORRECT
+  UPLOAD_DOC
+}
+
+model Application {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  openingId       String          @db.ObjectId
+  formId          String          @db.ObjectId
+
+  // Fixed fields (required for all applications)
+  name            String
+  yearOfStudy     YearOfStudy
+  phoneNumber     String
+  email           String
+  branch          String
+  priorExperience String?
+
+  // Metadata
+  submittedAt     DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  opening         Opening         @relation(fields: [openingId], references: [id], onDelete: Cascade)
+  form            Form            @relation(fields: [formId], references: [id], onDelete: Cascade)
+  fieldResponses  FieldResponse[]
+
+  @@map("applications")
+}
+
+enum YearOfStudy {
+  FIRST
+  SECOND
+  THIRD
+  FOURTH
+}
+
+model FieldResponse {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+  applicationId  String      @db.ObjectId
+  fieldId        String      @db.ObjectId
+  responseValue  String      // Store all types as text, parse based on inputType
+  fileUrl        String?     // For UPLOAD_DOC type
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  field          FormField   @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, fieldId])
+  @@map("field_responses")
+}
