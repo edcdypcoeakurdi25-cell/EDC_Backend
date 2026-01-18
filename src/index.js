@@ -8,7 +8,6 @@ import rateLimit from 'express-rate-limit';
 import openingRoutes from './routes/opening.route.js';
 
 
-
 const app = express();
 
 // Middleware
