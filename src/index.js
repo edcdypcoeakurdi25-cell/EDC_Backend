@@ -5,6 +5,9 @@ import express from 'express';
 import { prisma } from './lib/db.js';
 import routes from './routes/index.js';
 import rateLimit from 'express-rate-limit';
+import openingRoutes from './routes/opening.route.js';
+
+
 
 const app = express();
 
@@ -31,6 +34,7 @@ app.get('/', (req, res) => {
 
 // API routes
 app.use('/api', routes);
+app.use('/api/openings', openingRoutes);
 
 
 // 404 Handler
