@@ -4,9 +4,7 @@ import {
     getQuestionView,
     getIndividualView,
     exportApplicationsCSV,
-    getDashboardStats,
-    getMyOpenings,
-} from '../controllers/applicatonAnalysis.controller.js';
+} from '../controllers/applicationAnalysis.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.js';
 
 const router = express.Router();
@@ -20,7 +18,5 @@ router.get(
     getIndividualView
 );
 router.get('/:openingId/export', authenticate, authorize('ADMIN', 'LEADER'), exportApplicationsCSV);
-router.get('/stats', authenticate, authorize('ADMIN', 'LEADER'), getDashboardStats);
-router.get('/my-openings', authenticate, authorize('ADMIN', 'LEADER'), getMyOpenings);
 
 export default router;

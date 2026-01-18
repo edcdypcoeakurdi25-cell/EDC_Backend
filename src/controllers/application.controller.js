@@ -124,7 +124,13 @@ export const submitApplication = async (req, res) => {
                 include: {
                     fieldResponses: {
                         include: {
-                            field: true,
+                            field: {
+                                select: {
+                                    id: true,
+                                    fieldTitle: true,
+                                    inputType: true,
+                                },
+                            },
                         },
                     },
                     opening: {
@@ -233,6 +239,7 @@ export const getApplicationById = async (req, res) => {
                                 inputType: true,
                                 isRequired: true,
                                 options: true,
+                                order: true,
                             },
                         },
                     },
@@ -330,6 +337,13 @@ export const getApplicationsByOpening = async (req, res) => {
                 numberOfSlots: true,
             },
         });
+
+        if (!opening) {
+            return res.status(404).json({
+                success: false,
+                message: 'Opening not found',
+            });
+        }
 
         res.status(200).json({
             success: true,
