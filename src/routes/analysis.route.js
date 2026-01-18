@@ -4,7 +4,7 @@ import {
     getQuestionView,
     getIndividualView,
     exportApplicationsCSV,
-} from '../controllers/applicationAnalysis.controller.js';
+} from '../controllers/applicatonAnalysis.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.js';
 
 const router = express.Router();
