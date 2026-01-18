@@ -81,7 +81,7 @@ export const createForm = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Form created successfully',
-      form
+      data: form
     });
 
   } catch (error) {
@@ -136,7 +136,7 @@ export const getFormByOpeningId = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      form
+      data: form
     });
 
   } catch (error) {
@@ -198,7 +198,7 @@ export const getFormById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      form
+      data: form
     });
 
   } catch (error) {
@@ -250,7 +250,7 @@ export const updateForm = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Form updated successfully',
-      form
+      data: form
     });
 
   } catch (error) {
@@ -302,7 +302,7 @@ export const deleteForm = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Form and associated fields deleted successfully'
+      message: 'Form deleted successfully'
     });
 
   } catch (error) {

@@ -143,7 +143,7 @@ export const submitApplication = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Application submitted successfully',
-      application
+      data: application
     });
 
   } catch (error) {
@@ -200,10 +200,12 @@ export const getAllApplications = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      applications,
-      total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / take)
+      data: {
+        applications,
+        total,
+        page: parseInt(page),
+        totalPages: Math.ceil(total / take)
+      }
     });
 
   } catch (error) {
@@ -269,7 +271,7 @@ export const getApplicationById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      application
+      data: application
     });
 
   } catch (error) {
@@ -334,11 +336,13 @@ export const getApplicationsByOpening = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      opening,
-      applications,
-      total,
-      page: parseInt(page),
-      totalPages: Math.ceil(total / take)
+      data: {
+        opening,
+        applications,
+        total,
+        page: parseInt(page),
+        totalPages: Math.ceil(total / take)
+      }
     });
 
   } catch (error) {

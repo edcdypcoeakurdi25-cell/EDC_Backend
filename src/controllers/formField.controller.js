@@ -53,7 +53,7 @@ export const addFormField = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Form field added successfully',
-      formField
+      data: formField
     });
 
   } catch (error) {
@@ -107,7 +107,7 @@ export const updateFormField = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Form field updated successfully',
-      formField
+      data: formField
     });
 
   } catch (error) {
@@ -233,7 +233,7 @@ export const reorderFormFields = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Form fields reordered successfully',
-      formFields: updatedFields
+      data: updatedFields
     });
 
   } catch (error) {
