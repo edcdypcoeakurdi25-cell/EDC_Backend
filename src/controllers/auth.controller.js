@@ -6,14 +6,6 @@ export const login = async (req, res) => {
     try {
         const { domainName, password } = req.body;
 
-        // Validate input
-        if (!domainName || !password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Domain name and password are required',
-            });
-        }
-
         // Normalize domain name
         const normalizedDomainName = domainName.toLowerCase().trim();
 
