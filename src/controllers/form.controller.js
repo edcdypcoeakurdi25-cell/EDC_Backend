@@ -1,4 +1,5 @@
 import { prisma } from '../lib/db.js';
+
 // CREATE Form with Custom Fields
 export const createForm = async (req, res) => {
     try {
@@ -112,6 +113,7 @@ export const getFormByOpeningId = async (req, res) => {
                         isActive: true,
                         aboutRole: true,
                         skillsRequired: true,
+                        numberOfSlots: true,
                     },
                 },
             },
@@ -174,7 +176,7 @@ export const getFormById = async (req, res) => {
                     select: {
                         id: true,
                         name: true,
-                        email: true,
+                        domainName: true,
                         role: true,
                     },
                 },
@@ -250,6 +252,14 @@ export const updateForm = async (req, res) => {
         });
     } catch (error) {
         console.error('Error updating form:', error);
+
+        if (error.code === 'P2025') {
+            return res.status(404).json({
+                success: false,
+                message: 'Form not found',
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Failed to update form',
@@ -266,13 +276,6 @@ export const deleteForm = async (req, res) => {
         // Check if form exists
         const existingForm = await prisma.form.findUnique({
             where: { id },
-            include: {
-                _count: {
-                    select: {
-                        applications: true,
-                    },
-                },
-            },
         });
 
         if (!existingForm) {
@@ -282,15 +285,7 @@ export const deleteForm = async (req, res) => {
             });
         }
 
-        // Optionally warn if there are applications
-        if (existingForm._count.applications > 0) {
-            return res.status(400).json({
-                success: false,
-                message: `Cannot delete form. There are ${existingForm._count.applications} applications associated with it.`,
-            });
-        }
-
-        // Delete form (cascade will delete custom fields automatically)
+        // Delete form (cascade will delete custom fields and applications automatically)
         await prisma.form.delete({
             where: { id },
         });
@@ -301,6 +296,14 @@ export const deleteForm = async (req, res) => {
         });
     } catch (error) {
         console.error('Error deleting form:', error);
+
+        if (error.code === 'P2025') {
+            return res.status(404).json({
+                success: false,
+                message: 'Form not found',
+            });
+        }
+
         res.status(500).json({
             success: false,
             message: 'Failed to delete form',

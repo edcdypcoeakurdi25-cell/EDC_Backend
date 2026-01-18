@@ -7,7 +7,7 @@ import {
     deleteForm,
 } from '../controllers/form.controller.js';
 import { validateCreateForm } from '../middlewares/validation.js';
-import { authenticate, authorize, isOwnerOrAdmin } from '../middlewares/auth.js';
+import { authenticate, authorize, isFormOwnerOrAdmin } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -17,7 +17,7 @@ router.get('/opening/:openingId', getFormByOpeningId);
 // Protected routes
 router.post('/', authenticate, authorize('ADMIN', 'LEADER'), validateCreateForm, createForm);
 router.get('/:id', authenticate, authorize('ADMIN', 'LEADER'), getFormById);
-router.put('/:id', authenticate, authorize('ADMIN', 'LEADER'), isOwnerOrAdmin, updateForm);
-router.delete('/:id', authenticate, authorize('ADMIN', 'LEADER'), isOwnerOrAdmin, deleteForm);
+router.put('/:id', authenticate, authorize('ADMIN', 'LEADER'), isFormOwnerOrAdmin, updateForm);
+router.delete('/:id', authenticate, authorize('ADMIN', 'LEADER'), isFormOwnerOrAdmin, deleteForm);
 
 export default router;

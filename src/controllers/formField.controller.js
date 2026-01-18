@@ -28,6 +28,14 @@ export const addFormField = async (req, res) => {
             });
         }
 
+        // Check authorization (only form creator or admin can add fields)
+        if (req.user.role !== 'ADMIN' && form.createdById !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to add fields to this form',
+            });
+        }
+
         // If order not provided, set it to the next available position
         const fieldOrder = order !== undefined ? order : form.customFields.length;
 
@@ -121,13 +129,6 @@ export const deleteFormField = async (req, res) => {
         // Check if form field exists
         const existingField = await prisma.formField.findUnique({
             where: { id },
-            include: {
-                _count: {
-                    select: {
-                        responses: true,
-                    },
-                },
-            },
         });
 
         if (!existingField) {
@@ -137,15 +138,7 @@ export const deleteFormField = async (req, res) => {
             });
         }
 
-        // Optionally warn if there are responses
-        if (existingField._count.responses > 0) {
-            return res.status(400).json({
-                success: false,
-                message: `Cannot delete field. There are ${existingField._count.responses} responses associated with it.`,
-            });
-        }
-
-        // Delete form field
+        // Delete form field (cascade will delete responses)
         await prisma.formField.delete({
             where: { id },
         });
@@ -176,7 +169,6 @@ export const deleteFormField = async (req, res) => {
 export const reorderFormFields = async (req, res) => {
     try {
         const { formId, fieldOrders } = req.body;
-        // fieldOrders format: [{ fieldId: 'id1', order: 0 }, { fieldId: 'id2', order: 1 }]
 
         // Validate input
         if (!formId || !Array.isArray(fieldOrders) || fieldOrders.length === 0) {
@@ -189,12 +181,35 @@ export const reorderFormFields = async (req, res) => {
         // Verify form exists
         const form = await prisma.form.findUnique({
             where: { id: formId },
+            include: {
+                customFields: true,
+            },
         });
 
         if (!form) {
             return res.status(404).json({
                 success: false,
                 message: 'Form not found',
+            });
+        }
+
+        // Check authorization
+        if (req.user.role !== 'ADMIN' && form.createdById !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to reorder fields for this form',
+            });
+        }
+
+        // Validate that all fieldIds belong to this form
+        const formFieldIds = form.customFields.map(f => f.id);
+        const providedFieldIds = fieldOrders.map(f => f.fieldId);
+
+        const invalidFields = providedFieldIds.filter(id => !formFieldIds.includes(id));
+        if (invalidFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Some field IDs do not belong to this form',
             });
         }
 

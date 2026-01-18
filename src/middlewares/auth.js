@@ -131,3 +131,120 @@ export const isOwnerOrAdmin = async (req, res, next) => {
         });
     }
 };
+
+export const isFormOwnerOrAdmin = async (req, res, next) => {
+    try {
+        const { id } = req.params; // formId
+
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'User not authenticated',
+            });
+        }
+
+        // Admin can access everything
+        if (req.user.role === 'ADMIN') {
+            return next();
+        }
+
+        // Fetch form to check ownership
+        const form = await prisma.form.findUnique({
+            where: { id },
+            select: { createdById: true },
+        });
+
+        if (!form) {
+            return res.status(404).json({
+                success: false,
+                message: 'Form not found',
+            });
+        }
+
+        if (form.createdById !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to perform this action',
+            });
+        }
+
+        next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Authorization error',
+            error: error.message,
+        });
+    }
+};
+
+export const isFormFieldOwnerOrAdmin = async (req, res, next) => {
+    try {
+        const { id, formId } = req.params; // fieldId or formId depending on route
+        const fieldId = id;
+
+        if (!req.user) {
+            return res.status(401).json({
+                success: false,
+                message: 'User not authenticated',
+            });
+        }
+
+        // Admin can access everything
+        if (req.user.role === 'ADMIN') {
+            return next();
+        }
+
+        // Get the form associated with this field
+        let form;
+
+        if (fieldId) {
+            // For individual field operations (update/delete)
+            const formField = await prisma.formField.findUnique({
+                where: { id: fieldId },
+                select: {
+                    form: {
+                        select: { createdById: true },
+                    },
+                },
+            });
+
+            if (!formField) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Form field not found',
+                });
+            }
+
+            form = formField.form;
+        } else if (formId) {
+            // For reorder operation
+            form = await prisma.form.findUnique({
+                where: { id: formId },
+                select: { createdById: true },
+            });
+
+            if (!form) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Form not found',
+                });
+            }
+        }
+
+        if (form.createdById !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'You do not have permission to perform this action',
+            });
+        }
+
+        next();
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Authorization error',
+            error: error.message,
+        });
+    }
+};
