@@ -1,4 +1,4 @@
-import prisma from '../config/prisma.js';
+import { prisma } from '../lib/db.js';
 
 // SUBMIT Application (Public route for students)
 export const submitApplication = async (req, res) => {

@@ -1,4 +1,4 @@
-import prisma from '../config/prisma.js';
+import { prisma } from '../lib/db.js';
 
 // ADD Form Field
 export const addFormField = async (req, res) => {
