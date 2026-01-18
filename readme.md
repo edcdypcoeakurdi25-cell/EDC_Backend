@@ -35,14 +35,14 @@ All responses follow this structure:
 
 **Access:** Public
 
-**Description:** Login with email and password to get JWT token
+**Description:** Login with domain name and password to get JWT token
 
 **Request Body:**
 
 ```json
 {
-    "email": "admin@club.com",
-    "password": "securepassword"
+    "domainName": "technical",
+    "password": "securepassword123"
 }
 ```
 
@@ -55,7 +55,7 @@ All responses follow this structure:
     "data": {
         "user": {
             "id": "507f1f77bcf86cd799439011",
-            "email": "admin@club.com",
+            "domainName": "admin@club.com",
             "name": "John Doe",
             "role": "ADMIN"
         },
@@ -1402,13 +1402,13 @@ When rate limit is exceeded:
 
 ```javascript
 // Login
-const login = async (email, password) => {
+const login = async (domainName, password) => {
     const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ domainName, password }),
     });
 
     const data = await response.json();

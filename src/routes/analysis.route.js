@@ -5,7 +5,7 @@ import {
     getIndividualView,
     exportApplicationsCSV,
     getDashboardStats,
-    getMyOpenings
+    getMyOpenings,
 } from '../controllers/applicatonAnalysis.controller.js';
 import { authenticate, authorize } from '../middlewares/auth.js';
 

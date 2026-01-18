@@ -1,27 +1,99 @@
 import bcrypt from 'bcrypt';
 import { prisma } from '../lib/db.js';
 
-export const getAllUsers = async (req, res) => {
-    // GET /api/users
-    // Query: ?role=ADMIN&isActive=true
-    // Returns: { users: [], total }
+export const createUser = async (req, res) => {
     try {
-        const users = await prisma.user.findMany({
+        const { domainName, password, name, role } = req.body;
+
+        // Validate required fields
+        if (!domainName || !password || !name || !role) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required (domainName, password, name, role)',
+            });
+        }
+
+        // Normalize domain name (lowercase, no spaces)
+        const normalizedDomainName = domainName.toLowerCase().trim().replace(/\s+/g, '-');
+
+        // Check if domain already exists
+        const existingUser = await prisma.user.findUnique({
+            where: { domainName: normalizedDomainName },
+        });
+
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'Domain name already exists',
+            });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create user
+        const user = await prisma.user.create({
+            data: {
+                domainName: normalizedDomainName,
+                password: hashedPassword,
+                name,
+                role,
+            },
             select: {
                 id: true,
-                email: true,
+                domainName: true,
                 name: true,
                 role: true,
-                is_active: true,
-                created_at: true,
-                updated_at: true,
-                // Don't send password
+                isActive: true,
+                createdAt: true,
+            },
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'User created successfully',
+            data: user,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error creating user',
+            error: error.message,
+        });
+    }
+};
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const { role, isActive } = req.query;
+
+        // Build filter object
+        const where = {};
+        if (role) where.role = role;
+        if (isActive !== undefined) where.isActive = isActive === 'true';
+
+        const users = await prisma.user.findMany({
+            where,
+            select: {
+                id: true,
+                domainName: true,
+                name: true,
+                role: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+            orderBy: {
+                createdAt: 'desc',
             },
         });
 
         res.status(200).json({
             success: true,
-            data: users,
+            data: {
+                users,
+                total: users.length,
+            },
         });
     } catch (error) {
         res.status(500).json({
@@ -33,8 +105,6 @@ export const getAllUsers = async (req, res) => {
 };
 
 export const getUserById = async (req, res) => {
-    // GET /api/users/:id
-    // Returns: { user }
     try {
         const { id } = req.params;
 
@@ -42,12 +112,12 @@ export const getUserById = async (req, res) => {
             where: { id },
             select: {
                 id: true,
-                email: true,
+                domainName: true,
                 name: true,
                 role: true,
-                is_active: true,
-                created_at: true,
-                updated_at: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
             },
         });
 
@@ -72,12 +142,9 @@ export const getUserById = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-    // PUT /api/users/:id
-    // Body: { name, role, isActive }
-    // Returns: { user }
     try {
         const { id } = req.params;
-        const { email, password, name, role, is_active } = req.body;
+        const { name, role, isActive, password } = req.body;
 
         // Check if user exists
         const existingUser = await prisma.user.findUnique({
@@ -93,11 +160,9 @@ export const updateUser = async (req, res) => {
 
         // Prepare update data
         const updateData = {};
-
-        if (email) updateData.email = email;
-        if (name) updateData.name = name;
-        if (role) updateData.role = role;
-        if (is_active !== undefined) updateData.is_active = is_active;
+        if (name !== undefined) updateData.name = name;
+        if (role !== undefined) updateData.role = role;
+        if (isActive !== undefined) updateData.isActive = isActive;
 
         // Hash password if provided
         if (password) {
@@ -110,12 +175,12 @@ export const updateUser = async (req, res) => {
             data: updateData,
             select: {
                 id: true,
-                email: true,
+                domainName: true,
                 name: true,
                 role: true,
-                is_active: true,
-                created_at: true,
-                updated_at: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
             },
         });
 
@@ -134,8 +199,6 @@ export const updateUser = async (req, res) => {
 };
 
 export const deleteUser = async (req, res) => {
-    // DELETE /api/users/:id
-    // Returns: { message }
     try {
         const { id } = req.params;
 

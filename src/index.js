@@ -7,7 +7,6 @@ import routes from './routes/index.js';
 import rateLimit from 'express-rate-limit';
 import openingRoutes from './routes/opening.route.js';
 
-
 const app = express();
 
 // Middleware
@@ -16,25 +15,21 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 // Rate limiter
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100
+    max: 100,
 });
 app.use('/api', limiter);
-
 
 // Health check route
 app.get('/', (req, res) => {
     res.send('API is running!');
 });
 
-
 // API routes
 app.use('/api', routes);
 app.use('/api/openings', openingRoutes);
-
 
 // 404 Handler
 app.use((req, res) => {
@@ -43,7 +38,6 @@ app.use((req, res) => {
         message: 'Route not found',
     });
 });
-
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -54,7 +48,6 @@ app.use((err, req, res, next) => {
         ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
     });
 });
-
 
 const PORT = process.env.PORT || 8080;
 
