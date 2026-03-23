@@ -27,6 +27,9 @@ app.get('/', (req, res) => {
     res.send('API is running!');
 });
 
+// Serve the uploads directory statically
+app.use('/uploads', express.static('uploads'));
+
 // API routes
 app.use('/api', routes);
 app.use('/api/openings', openingRoutes);
