@@ -2,6 +2,7 @@ import 'dotenv/config';
 import cors from 'cors';
 import morgan from 'morgan';
 import express from 'express';
+import job from './lib/cron.js';
 import { prisma } from './lib/db.js';
 import routes from './routes/index.js';
 import rateLimit from 'express-rate-limit';
@@ -21,6 +22,8 @@ const limiter = rateLimit({
     max: 100,
 });
 app.use('/api', limiter);
+
+job.start();
 
 // Health check route
 app.get('/', (req, res) => {
